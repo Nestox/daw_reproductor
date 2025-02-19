@@ -1,8 +1,5 @@
-
-
 <template>
     <div class="player-container">
-
         <div class="content-container">
             <div class="lateral-container">
                 <div class="search-box-container">
@@ -10,7 +7,7 @@
                     <i class="bi bi-search"></i>
                 </div>
                 <nav>
-
+                    <historial />
                 </nav>
             </div>
             <div class="data-container">
@@ -45,13 +42,13 @@
             </div>
         </div>
     </div>
-
 </template>
 
 <script setup>
     import { useTemplateRef, ref, onMounted, watch } from 'vue';
     import { useSoundDataStore } from '../stores/soundData';
     import { useSearchStore } from '@/stores/search';
+    import historial from '@/pages/historial.vue';
 
     const searchDataStore = useSearchStore();
     const soundDataStore = useSoundDataStore();
@@ -64,6 +61,11 @@
     let songCurrentTime = ref(0);
     let songFullTime = ref(0);
 
+    const formatTime = (time) => {
+        let minutes = Math.floor(time / 60);
+        let seconds = Math.floor(time % 60);
+        return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+    };
 
     watch(soundDataStore, () => {
         reproductor.value.load();
@@ -71,34 +73,27 @@
         currentButtonIcon.value = "bi bi-pause-circle";
     });
 
-
     onMounted(async () => {
         reproductor.value.addEventListener('loadedmetadata', () => {
             let duration = Math.floor(reproductor.value.duration);
-
             songFullTime.value = duration;
-
-            endTime.value = "0:" + duration;
+            endTime.value = formatTime(duration);
         });
 
         reproductor.value.addEventListener("timeupdate", () => {
             let duration = Math.floor(reproductor.value.currentTime);
-
-            currentTime.value = "0:" + duration;
+            currentTime.value = formatTime(duration);
             songCurrentTime.value = duration;
         });
-
     });
-
 
     const changeAudioTime = (e) => {
         if(e.target.value == Math.floor(reproductor.value.currentTime)) return;
         
         reproductor.value.currentTime = e.target.value;
-        currentTime.value = "0:" + Math.floor(reproductor.value.currentTime);
-    }
+        currentTime.value = formatTime(Math.floor(reproductor.value.currentTime));
+    };
 
-    
     const toggleReproduction = () => {
         if(reproductor.value.paused){
             currentButtonIcon.value = "bi bi-pause-circle";
